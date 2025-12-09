@@ -1,3 +1,4 @@
 vendor
 composer.lock
 build_from_scratch.sh
+codex_instructions.txt
