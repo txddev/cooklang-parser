@@ -14,6 +14,7 @@ final class Step
     public function __construct(
         private readonly int $index,
         private readonly array $tokens,
+        private readonly ?string $section = null,
     ) {
     }
 
@@ -28,6 +29,11 @@ final class Step
     public function getTokens(): array
     {
         return $this->tokens;
+    }
+
+    public function getSection(): ?string
+    {
+        return $this->section;
     }
 
     public function getText(): string

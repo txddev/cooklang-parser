@@ -51,22 +51,23 @@ echo $recipe->getSlug(); // "garlic-bread"
   - `TextToken`: Plain text fragments.
   - `IngredientToken`: Parsed ingredient name, quantity, unit, optional flag, and raw quantity string.
   - `CookwareToken`: Named cookware references.
-  - `TimerToken`: Named or anonymous timers with duration and units.
+- `TimerToken`: Named or anonymous timers with duration and units.
 - `Ingredient` / `IngredientOccurrence`: Deduplicated ingredient summary with per-step occurrences.
 - `Cookware`: Deduplicated cookware references with occurrence indexes.
 - `Comment`: Stored for any line beginning with `//` or `>` (special handling for `> Source:`).
+- Section headers: Lines like `== Filling ==` set the section for subsequent steps and ingredient occurrences.
 
 ### Supported Cooklang Features
 
 - YAML-like front matter between `---` fences (key/value pairs and dash lists).
-- Inline ingredients (`@`), cookware (`#`), and timers (`~`) with quantity/unit parsing.
+- Inline ingredients (`@`) with space-friendly names and mandatory `{}` quantity delimiters (quantity/unit optional), plus cookware (`#`) and timers (`~`) with quantity/unit parsing.
 - Escaped control characters via `\@`, `\#`, and `\~`.
 - Comment lines beginning with `//` or `>` (with `> Source:` promoted to metadata).
 - Step splitting on blank lines, blank-line tolerant.
 
 Documented limitations:
 
-- Ingredient and cookware names currently support alphanumeric characters, underscores, and dashes (no spaces).
+- Cookware names currently support alphanumeric characters, underscores, and dashes (no spaces).
 - The front matter parser accepts a safe YAML subset (key/value pairs, dash lists, inline arrays).
 
 ## Testing

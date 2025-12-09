@@ -121,8 +121,57 @@ it('derives slug when parsing from a file', function (): void {
     unlink($target);
 });
 
+it('parses ingredient names with spaces and requires brace delimiters', function (): void {
+    $content = 'Stir in @brown sugar{2%tbsp} and @soy sauce?{} before serving.';
+
+    $recipe = (new CooklangParser())->parseString($content);
+    $tokens = $recipe->getSteps()[0]->getTokens();
+
+    /** @var IngredientToken[] $ingredients */
+    $ingredients = array_values(
+        array_filter($tokens, static fn ($token) => $token instanceof IngredientToken)
+    );
+
+    expect($ingredients)->toHaveCount(2);
+    expect($ingredients[0]->getName())->toBe('brown sugar');
+    expect($ingredients[0]->getQuantity())->toBe(2.0);
+    expect($ingredients[0]->getUnit())->toBe('tbsp');
+    expect($ingredients[1]->getName())->toBe('soy sauce');
+    expect($ingredients[1]->isOptional())->toBeTrue();
+    expect($ingredients[1]->getRawQuantity())->toBe('');
+});
+
+it('associates steps and ingredient occurrences with sections', function (): void {
+    $content = <<<'COOK'
+== Dough ==
+Mix @bread flour{300%g} with @water{200%ml}.
+
+== Filling ==
+Spread @brown sugar{50%g} on the dough.
+COOK;
+
+    $recipe = (new CooklangParser())->parseString($content);
+    $steps = $recipe->getSteps();
+
+    expect($steps)->toHaveCount(2);
+    expect($steps[0]->getSection())->toBe('Dough');
+    expect($steps[1]->getSection())->toBe('Filling');
+
+    $ingredients = $recipe->getIngredients();
+    $occurrences = $ingredients[0]->getOccurrences();
+
+    expect($occurrences[0]->getSection())->toBe('Dough');
+});
+
 it('throws a parse exception for invalid syntax', function (): void {
     $content = 'Add @ {100%g}';
+
+    expect(fn () => (new CooklangParser())->parseString($content))
+        ->toThrow(ParseException::class);
+});
+
+it('throws a parse exception when ingredient braces are missing', function (): void {
+    $content = 'Season with @salt and @pepper{1%tsp}.';
 
     expect(fn () => (new CooklangParser())->parseString($content))
         ->toThrow(ParseException::class);

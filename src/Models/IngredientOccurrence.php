@@ -12,6 +12,7 @@ final class IngredientOccurrence
         private readonly ?string $unit,
         private readonly bool $optional,
         private readonly ?string $rawQuantity = null,
+        private readonly ?string $section = null,
     ) {
     }
 
@@ -38,5 +39,10 @@ final class IngredientOccurrence
     public function getRawQuantity(): ?string
     {
         return $this->rawQuantity;
+    }
+
+    public function getSection(): ?string
+    {
+        return $this->section;
     }
 }

@@ -49,15 +49,15 @@ class CooklangParser
 
         [$rawMetadata, $body] = $this->extractFrontMatter($source);
 
-        [$stepStrings, $comments, $derivedMetadata] = $this->separateBody($body);
+        [$stepChunks, $comments, $derivedMetadata] = $this->separateBody($body);
 
         $metadata = Metadata::fromArray(array_merge($rawMetadata, $derivedMetadata));
 
         $steps = [];
 
-        foreach ($stepStrings as $index => $text) {
-            $tokens = $this->tokenizeStep($text);
-            $steps[] = new Step($index, $tokens);
+        foreach ($stepChunks as $index => $stepData) {
+            $tokens = $this->tokenizeStep($stepData['text']);
+            $steps[] = new Step($index, $tokens, $stepData['section']);
         }
 
         [$ingredients, $cookware] = $this->summarizeTokens($steps);
@@ -94,7 +94,7 @@ class CooklangParser
     }
 
     /**
-     * @return array{0: array<int, string>, 1: array<int, Comment>, 2: array<string, mixed>}
+     * @return array{0: array<int, array{text: string, section: ?string}>, 1: array<int, Comment>, 2: array<string, mixed>}
      */
     private function separateBody(string $body): array
     {
@@ -104,14 +104,25 @@ class CooklangParser
         $derivedMetadata = [];
         $steps = [];
         $buffer = [];
+        $currentSection = null;
 
         foreach ($lines as $number => $line) {
             $lineNumber = $number + 1;
             $trimmed = trim($line);
 
+            if ($this->isSectionLine($trimmed)) {
+                if ($buffer !== []) {
+                    $steps[] = ['text' => implode(' ', $buffer), 'section' => $currentSection];
+                    $buffer = [];
+                }
+
+                $currentSection = $this->extractSectionName($trimmed);
+                continue;
+            }
+
             if ($trimmed === '') {
                 if ($buffer !== []) {
-                    $steps[] = implode(' ', $buffer);
+                    $steps[] = ['text' => implode(' ', $buffer), 'section' => $currentSection];
                     $buffer = [];
                 }
 
@@ -133,7 +144,7 @@ class CooklangParser
         }
 
         if ($buffer !== []) {
-            $steps[] = implode(' ', $buffer);
+            $steps[] = ['text' => implode(' ', $buffer), 'section' => $currentSection];
         }
 
         return [$steps, $comments, $derivedMetadata];
@@ -213,13 +224,41 @@ class CooklangParser
      */
     private function parseIngredientToken(string $text, int $start): array
     {
-        [$name, $optional, $offset] = $this->consumeName($text, $start + 1);
+        $bracePosition = strpos($text, '{', $start + 1);
+
+        if ($bracePosition === false) {
+            throw new ParseException(sprintf('Ingredient missing quantity delimiters near position %d.', $start));
+        }
+
+        $nameSegment = substr($text, $start + 1, $bracePosition - ($start + 1));
+        $optional = false;
+        $nameSegment = rtrim($nameSegment);
+
+        if (strpbrk($nameSegment, '@#~') !== false) {
+            throw new ParseException(sprintf('Ingredient missing quantity delimiters near position %d.', $start));
+        }
+
+        if ($nameSegment === '') {
+            throw new ParseException(sprintf('Ingredient missing name at position %d.', $start));
+        }
+
+        if (str_ends_with($nameSegment, '?')) {
+            $optional = true;
+            $nameSegment = rtrim(substr($nameSegment, 0, -1));
+        }
+
+        $name = trim($nameSegment);
 
         if ($name === '') {
             throw new ParseException(sprintf('Ingredient missing name at position %d.', $start));
         }
 
-        [$rawQuantity, $cursor] = $this->consumeBraceValue($text, $offset);
+        [$rawQuantity, $cursor] = $this->consumeBraceValue($text, $bracePosition);
+
+        if ($rawQuantity === null) {
+            throw new ParseException(sprintf('Ingredient missing quantity delimiters near position %d.', $start));
+        }
+
         [$quantity, $unit] = $this->splitQuantity($rawQuantity);
 
         $token = new IngredientToken($name, $quantity, $unit, $optional, $rawQuantity);
@@ -341,7 +380,8 @@ class CooklangParser
                             $token->getQuantity(),
                             $token->getUnit(),
                             $token->isOptional(),
-                            $token->getRawQuantity()
+                            $token->getRawQuantity(),
+                            $step->getSection()
                         )
                     );
                 }
@@ -511,6 +551,18 @@ class CooklangParser
     private function isCommentLine(string $line): bool
     {
         return str_starts_with($line, '//') || str_starts_with($line, '>');
+    }
+
+    private function isSectionLine(string $line): bool
+    {
+        return preg_match('/^==\s*(.+?)\s*==$/', $line) === 1;
+    }
+
+    private function extractSectionName(string $line): string
+    {
+        preg_match('/^==\s*(.+?)\s*==$/', $line, $matches);
+
+        return trim($matches[1]);
     }
 
     private function stripCommentPrefix(string $line): string
