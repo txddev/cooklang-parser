@@ -77,6 +77,21 @@ it('parses cookware and timers as dedicated tokens', function (): void {
     expect($timers[1]->getDuration())->toBe(10.0);
 });
 
+it('supports cookware names defined with braces and spaces', function (): void {
+    $content = 'Prepare #single_word{}, then grab #multiple words{} before using #{stand mixer}.';
+
+    $tokens = (new CooklangParser)->parseString($content)->getSteps()[0]->getTokens();
+
+    $cookware = array_values(
+        array_filter($tokens, static fn ($token) => $token instanceof CookwareToken)
+    );
+
+    expect($cookware)->toHaveCount(3);
+    expect($cookware[0]->getName())->toBe('single_word');
+    expect($cookware[1]->getName())->toBe('multiple words');
+    expect($cookware[2]->getName())->toBe('stand mixer');
+});
+
 it('captures comments and derives metadata from special comments', function (): void {
     $content = <<<'COOK'
 > Source: https://example.test/recipe

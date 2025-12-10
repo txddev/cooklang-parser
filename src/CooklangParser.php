@@ -314,7 +314,59 @@ class CooklangParser
      */
     private function parseCookwareToken(string $text, int $start): array
     {
-        [$name, , $offset] = $this->consumeName($text, $start + 1, allowOptional: false);
+        $index = $start + 1;
+        $length = strlen($text);
+
+        if ($index >= $length) {
+            throw new ParseException(sprintf('Cookware missing name at position %d.', $start));
+        }
+
+        // Support optional brace-wrapped cookware names that may contain spaces per spec.
+        if ($text[$index] === '{') {
+            [$rawName, $cursor] = $this->consumeBraceValue($text, $index);
+            $name = trim((string) $rawName);
+
+            if ($name === '') {
+                throw new ParseException(sprintf('Cookware missing name at position %d.', $start));
+            }
+
+            return [
+                'token' => new CookwareToken($name),
+                'position' => $cursor,
+            ];
+        }
+
+        $bracePosition = strpos($text, '{', $index);
+
+        if ($bracePosition !== false) {
+            $segmentBeforeBrace = substr($text, $index, $bracePosition - $index);
+
+            // Ignore braces that clearly belong to other tokens (e.g. timers) by checking for token markers.
+            if (strpbrk($segmentBeforeBrace, '@#~') !== false) {
+                $bracePosition = false;
+            }
+        }
+
+        if ($bracePosition !== false) {
+            $nameSegment = substr($text, $index, $bracePosition - $index);
+            $name = trim($nameSegment);
+            [$rawName, $cursor] = $this->consumeBraceValue($text, $bracePosition);
+
+            if ($name === '') {
+                $name = trim((string) $rawName);
+            }
+
+            if ($name === '') {
+                throw new ParseException(sprintf('Cookware missing name at position %d.', $start));
+            }
+
+            return [
+                'token' => new CookwareToken($name),
+                'position' => $cursor,
+            ];
+        }
+
+        [$name, , $offset] = $this->consumeName($text, $index, allowOptional: false);
 
         if ($name === '') {
             throw new ParseException(sprintf('Cookware missing name at position %d.', $start));
