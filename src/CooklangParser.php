@@ -695,7 +695,30 @@ class CooklangParser
         $currentKey = null;
 
         foreach ($lines as $line) {
-            if (preg_match('/^\s*([A-Za-z0-9_\-]+):\s*(.*)$/', $line, $matches)) {
+            if ($currentKey !== null && preg_match('/^\s*-\s*(.+)$/', $line, $matches)) {
+                $result[$currentKey] ??= [];
+                $result[$currentKey][] = $this->castMetadataValue($matches[1]);
+
+                continue;
+            }
+
+            if ($currentKey !== null && preg_match('/^\s{2,}([A-Za-z0-9_\-\. ]+):\s*(.*)$/', $line, $matches)) {
+                $nestedKey = trim($matches[1]);
+                $value = $matches[2];
+                $result[$currentKey] ??= [];
+
+                if (! is_array($result[$currentKey])) {
+                    $result[$currentKey] = [];
+                }
+
+                $result[$currentKey][$nestedKey] = $value === ''
+                    ? []
+                    : $this->castMetadataValue($value);
+
+                continue;
+            }
+
+            if (preg_match('/^\s*([A-Za-z0-9_\-\. ]+):\s*(.*)$/', $line, $matches)) {
                 $key = $matches[1];
                 $value = $matches[2];
 
@@ -709,12 +732,6 @@ class CooklangParser
                 $result[$key] = $this->castMetadataValue($value);
                 $currentKey = null;
 
-                continue;
-            }
-
-            if ($currentKey !== null && preg_match('/^\s*-\s*(.+)$/', $line, $matches)) {
-                $result[$currentKey] ??= [];
-                $result[$currentKey][] = $this->castMetadataValue($matches[1]);
             }
         }
 

@@ -92,6 +92,46 @@ it('supports cookware names defined with braces and spaces', function (): void {
     expect($cookware[2]->getName())->toBe('stand mixer');
 });
 
+it('normalizes metadata according to the Cooklang spec', function (): void {
+    $content = <<<'COOK'
+---
+title: Slow Roast
+serves: 6 portions
+course: Dinner
+diet:
+  - gluten-free
+  - dairy-free
+source:
+  name: Example Blog
+  url: https://example.test/slow-roast
+  author: Jane Smith
+time: 1 hour 30 minutes
+prep time: 20 min
+cook time: 1h10m
+picture:
+  - https://example.test/slow-roast.jpg
+introduction: Family favourite roast.
+---
+Rest and enjoy.
+COOK;
+
+    $recipe = (new CooklangParser)->parseString($content);
+    $metadata = $recipe->getMetadata();
+
+    expect($metadata->getTitle())->toBe('Slow Roast');
+    expect($metadata->getServings())->toBe(6);
+    expect($metadata->get('course'))->toBe('Dinner');
+    expect($metadata->get('diet'))->toBe(['gluten-free', 'dairy-free']);
+    expect($metadata->getSource())->toBe('Example Blog');
+    expect($metadata->get('source_url'))->toBe('https://example.test/slow-roast');
+    expect($metadata->get('author'))->toBe('Jane Smith');
+    expect($metadata->getTotalTime())->toBe(90);
+    expect($metadata->getPrepTime())->toBe(20);
+    expect($metadata->getCookTime())->toBe(70);
+    expect($metadata->get('image'))->toBe('https://example.test/slow-roast.jpg');
+    expect($metadata->get('description'))->toBe('Family favourite roast.');
+});
+
 it('captures comments and derives metadata from special comments', function (): void {
     $content = <<<'COOK'
 > Source: https://example.test/recipe
