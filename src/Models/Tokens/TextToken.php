@@ -6,9 +6,7 @@ namespace Txd\CooklangParser\Models\Tokens;
 
 final class TextToken implements Token
 {
-    public function __construct(private readonly string $text)
-    {
-    }
+    public function __construct(private readonly string $text) {}
 
     public function getText(): string
     {

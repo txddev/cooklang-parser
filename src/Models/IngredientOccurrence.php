@@ -13,8 +13,7 @@ final class IngredientOccurrence
         private readonly bool $optional,
         private readonly ?string $rawQuantity = null,
         private readonly ?string $section = null,
-    ) {
-    }
+    ) {}
 
     public function getStepIndex(): int
     {

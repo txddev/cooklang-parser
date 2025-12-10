@@ -6,6 +6,4 @@ namespace Txd\CooklangParser\Exceptions;
 
 use RuntimeException;
 
-class FileNotFoundException extends RuntimeException
-{
-}
+class FileNotFoundException extends RuntimeException {}

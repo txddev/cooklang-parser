@@ -6,9 +6,7 @@ namespace Txd\CooklangParser\Models\Tokens;
 
 final class CookwareToken implements Token
 {
-    public function __construct(private readonly string $name)
-    {
-    }
+    public function __construct(private readonly string $name) {}
 
     public function getName(): string
     {
@@ -17,6 +15,6 @@ final class CookwareToken implements Token
 
     public function toText(): string
     {
-        return '#' . $this->name;
+        return '#'.$this->name;
     }
 }

@@ -11,8 +11,7 @@ final class TimerToken implements Token
         private readonly ?float $duration,
         private readonly ?string $unit,
         private readonly ?string $rawDuration = null,
-    ) {
-    }
+    ) {}
 
     public function getName(): ?string
     {
@@ -39,15 +38,15 @@ final class TimerToken implements Token
         if ($this->rawDuration !== null) {
             $name = $this->name ?? '';
 
-            return '~' . $name . '{' . $this->rawDuration . '}';
+            return '~'.$name.'{'.$this->rawDuration.'}';
         }
 
         $suffix = '';
 
         if ($this->duration !== null) {
-            $suffix = $this->duration . ($this->unit ?? '');
+            $suffix = $this->duration.($this->unit ?? '');
         }
 
-        return '~' . ($this->name ?? $suffix);
+        return '~'.($this->name ?? $suffix);
     }
 }

@@ -117,6 +117,7 @@ class CooklangParser
                 }
 
                 $currentSection = $this->extractSectionName($trimmed);
+
                 continue;
             }
 
@@ -166,10 +167,12 @@ class CooklangParser
                 if ($index + 1 < $length) {
                     $buffer .= $text[$index + 1];
                     $index++;
+
                     continue;
                 }
 
                 $buffer .= $char;
+
                 continue;
             }
 
@@ -182,6 +185,7 @@ class CooklangParser
                 $result = $this->parseIngredientToken($text, $index);
                 $tokens[] = $result['token'];
                 $index = $result['position'];
+
                 continue;
             }
 
@@ -194,6 +198,7 @@ class CooklangParser
                 $result = $this->parseCookwareToken($text, $index);
                 $tokens[] = $result['token'];
                 $index = $result['position'];
+
                 continue;
             }
 
@@ -206,6 +211,7 @@ class CooklangParser
                 $result = $this->parseTimerToken($text, $index);
                 $tokens[] = $result['token'];
                 $index = $result['position'];
+
                 continue;
             }
 
@@ -452,12 +458,14 @@ class CooklangParser
                 $value .= $char;
                 $escaped = false;
                 $index++;
+
                 continue;
             }
 
             if ($char === '\\') {
                 $escaped = true;
                 $index++;
+
                 continue;
             }
 
@@ -591,8 +599,7 @@ class CooklangParser
     }
 
     /**
-     * @param array<string, mixed> $result
-     *
+     * @param  array<string, mixed>  $result
      * @return array<string, mixed>
      */
     private function parseMetadataBlock(string $block): array
@@ -609,11 +616,13 @@ class CooklangParser
                 if ($value === '') {
                     $result[$key] = [];
                     $currentKey = $key;
+
                     continue;
                 }
 
                 $result[$key] = $this->castMetadataValue($value);
                 $currentKey = null;
+
                 continue;
             }
 
@@ -632,6 +641,10 @@ class CooklangParser
 
         if ($value === '') {
             return null;
+        }
+
+        if (str_starts_with($value, '"') && str_ends_with($value, '"')) {
+            return substr($value, 1, -1);
         }
 
         if (str_starts_with($value, '[') && str_ends_with($value, ']')) {

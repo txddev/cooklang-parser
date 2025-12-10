@@ -9,8 +9,7 @@ final class Comment
     public function __construct(
         private readonly string $text,
         private readonly int $lineNumber,
-    ) {
-    }
+    ) {}
 
     public function getText(): string
     {

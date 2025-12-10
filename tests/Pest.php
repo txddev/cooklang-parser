@@ -11,4 +11,3 @@ declare(strict_types=1);
 | shared hooks, helpers, or global test case configuration.
 |
 */
-

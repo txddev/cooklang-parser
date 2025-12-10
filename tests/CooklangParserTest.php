@@ -23,7 +23,7 @@ Melt @butter{50%g} with @garlic{2%clove}.
 Brush over #loaf and bake for ~10min.
 COOK;
 
-    $parser = new CooklangParser();
+    $parser = new CooklangParser;
     $recipe = $parser->parseString($content);
 
     expect($recipe->getMetadata()->getTitle())->toBe('Garlic Bread');
@@ -38,7 +38,7 @@ COOK;
 it('extracts detailed ingredient information', function (): void {
     $content = 'Combine @flour{200%g}, @milk{1.5%cup}, and @salt?{1%pinch}.';
 
-    $recipe = (new CooklangParser())->parseString($content);
+    $recipe = (new CooklangParser)->parseString($content);
     $step = $recipe->getSteps()[0];
     $ingredients = array_filter(
         $step->getTokens(),
@@ -58,7 +58,7 @@ it('extracts detailed ingredient information', function (): void {
 it('parses cookware and timers as dedicated tokens', function (): void {
     $content = 'Heat #skillet and cook for ~sear{2%min} before resting for ~10min.';
 
-    $recipe = (new CooklangParser())->parseString($content);
+    $recipe = (new CooklangParser)->parseString($content);
     $tokens = $recipe->getSteps()[0]->getTokens();
 
     $cookware = array_values(
@@ -85,7 +85,7 @@ it('captures comments and derives metadata from special comments', function (): 
 Mix ingredients gently.
 COOK;
 
-    $recipe = (new CooklangParser())->parseString($content);
+    $recipe = (new CooklangParser)->parseString($content);
 
     expect($recipe->getMetadata()->getSource())->toBe('https://example.test/recipe');
     expect($recipe->getComments())->toHaveCount(2);
@@ -95,21 +95,21 @@ COOK;
 it('keeps escaped markers as plain text', function (): void {
     $content = 'Write \\@literal symbols and \\#hash without tokens.';
 
-    $tokens = (new CooklangParser())->parseString($content)->getSteps()[0]->getTokens();
+    $tokens = (new CooklangParser)->parseString($content)->getSteps()[0]->getTokens();
 
     expect($tokens)->toHaveCount(1);
     expect($tokens[0]->toText())->toContain('@literal');
 });
 
 it('derives slug when parsing from a file', function (): void {
-    $parser = new CooklangParser();
+    $parser = new CooklangParser;
     $path = tempnam(sys_get_temp_dir(), 'cooklang');
 
     if ($path === false) {
         test()->fail('Unable to create temporary file for testing.');
     }
 
-    $target = $path . '.cook';
+    $target = $path.'.cook';
     rename($path, $target);
 
     file_put_contents($target, 'Mix @water and @flour.');
@@ -124,7 +124,7 @@ it('derives slug when parsing from a file', function (): void {
 it('parses ingredient names with spaces and requires brace delimiters', function (): void {
     $content = 'Stir in @brown sugar{2%tbsp} and @soy sauce?{} before serving.';
 
-    $recipe = (new CooklangParser())->parseString($content);
+    $recipe = (new CooklangParser)->parseString($content);
     $tokens = $recipe->getSteps()[0]->getTokens();
 
     /** @var IngredientToken[] $ingredients */
@@ -150,7 +150,7 @@ Mix @bread flour{300%g} with @water{200%ml}.
 Spread @brown sugar{50%g} on the dough.
 COOK;
 
-    $recipe = (new CooklangParser())->parseString($content);
+    $recipe = (new CooklangParser)->parseString($content);
     $steps = $recipe->getSteps();
 
     expect($steps)->toHaveCount(2);
@@ -166,18 +166,18 @@ COOK;
 it('throws a parse exception for invalid syntax', function (): void {
     $content = 'Add @ {100%g}';
 
-    expect(fn () => (new CooklangParser())->parseString($content))
+    expect(fn () => (new CooklangParser)->parseString($content))
         ->toThrow(ParseException::class);
 });
 
 it('throws a parse exception when ingredient braces are missing', function (): void {
     $content = 'Season with @salt and @pepper{1%tsp}.';
 
-    expect(fn () => (new CooklangParser())->parseString($content))
+    expect(fn () => (new CooklangParser)->parseString($content))
         ->toThrow(ParseException::class);
 });
 
 it('throws when the Cooklang file does not exist', function (): void {
-    expect(fn () => (new CooklangParser())->parseFile('/tmp/missing-file.cook'))
+    expect(fn () => (new CooklangParser)->parseFile('/tmp/missing-file.cook'))
         ->toThrow(FileNotFoundException::class);
 });

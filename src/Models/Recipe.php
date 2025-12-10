@@ -7,10 +7,10 @@ namespace Txd\CooklangParser\Models;
 final class Recipe
 {
     /**
-     * @param array<int, Step> $steps
-     * @param array<int, Ingredient> $ingredients
-     * @param array<int, Cookware> $cookware
-     * @param array<int, Comment> $comments
+     * @param  array<int, Step>  $steps
+     * @param  array<int, Ingredient>  $ingredients
+     * @param  array<int, Cookware>  $cookware
+     * @param  array<int, Comment>  $comments
      */
     public function __construct(
         private readonly ?string $slug,
@@ -19,8 +19,7 @@ final class Recipe
         private readonly array $ingredients,
         private readonly array $cookware,
         private readonly array $comments,
-    ) {
-    }
+    ) {}
 
     public function getSlug(): ?string
     {

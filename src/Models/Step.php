@@ -9,14 +9,13 @@ use Txd\CooklangParser\Models\Tokens\Token;
 final class Step
 {
     /**
-     * @param array<int, Token> $tokens
+     * @param  array<int, Token>  $tokens
      */
     public function __construct(
         private readonly int $index,
         private readonly array $tokens,
         private readonly ?string $section = null,
-    ) {
-    }
+    ) {}
 
     public function getIndex(): int
     {

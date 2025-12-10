@@ -12,8 +12,7 @@ final class IngredientToken implements Token
         private readonly ?string $unit,
         private readonly bool $optional = false,
         private readonly ?string $rawQuantity = null,
-    ) {
-    }
+    ) {}
 
     public function getName(): string
     {
@@ -45,9 +44,9 @@ final class IngredientToken implements Token
         $suffix = '';
 
         if ($this->rawQuantity !== null) {
-            $suffix = '{' . $this->rawQuantity . '}';
+            $suffix = '{'.$this->rawQuantity.'}';
         }
 
-        return '@' . $this->name . ($this->optional ? '?' : '') . $suffix;
+        return '@'.$this->name.($this->optional ? '?' : '').$suffix;
     }
 }

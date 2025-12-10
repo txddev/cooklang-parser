@@ -12,7 +12,7 @@ final class Metadata
     private array $attributes;
 
     /**
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public function __construct(array $attributes = [])
     {
@@ -20,7 +20,7 @@ final class Metadata
     }
 
     /**
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public static function fromArray(array $attributes): self
     {

@@ -6,6 +6,4 @@ namespace Txd\CooklangParser\Exceptions;
 
 use RuntimeException;
 
-class ParseException extends RuntimeException
-{
-}
+class ParseException extends RuntimeException {}
