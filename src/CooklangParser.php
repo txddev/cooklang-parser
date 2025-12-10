@@ -21,6 +21,10 @@ use Txd\CooklangParser\Models\Tokens\Token;
 
 class CooklangParser
 {
+    public function __construct(
+        private readonly bool $lenientParsing = true
+    ) {}
+
     public function parseString(string $source): Recipe
     {
         return $this->doParse($source, null);
@@ -182,9 +186,19 @@ class CooklangParser
                     $buffer = '';
                 }
 
-                $result = $this->parseIngredientToken($text, $index);
-                $tokens[] = $result['token'];
-                $index = $result['position'];
+                try {
+                    $result = $this->parseIngredientToken($text, $index);
+                    $tokens[] = $result['token'];
+                    $index = $result['position'];
+                } catch (ParseException $exception) {
+                    if (! $this->lenientParsing) {
+                        throw $exception;
+                    }
+
+                    $buffer = '@';
+
+                    continue;
+                }
 
                 continue;
             }
@@ -195,9 +209,19 @@ class CooklangParser
                     $buffer = '';
                 }
 
-                $result = $this->parseCookwareToken($text, $index);
-                $tokens[] = $result['token'];
-                $index = $result['position'];
+                try {
+                    $result = $this->parseCookwareToken($text, $index);
+                    $tokens[] = $result['token'];
+                    $index = $result['position'];
+                } catch (ParseException $exception) {
+                    if (! $this->lenientParsing) {
+                        throw $exception;
+                    }
+
+                    $buffer = '#';
+
+                    continue;
+                }
 
                 continue;
             }
@@ -208,9 +232,19 @@ class CooklangParser
                     $buffer = '';
                 }
 
-                $result = $this->parseTimerToken($text, $index);
-                $tokens[] = $result['token'];
-                $index = $result['position'];
+                try {
+                    $result = $this->parseTimerToken($text, $index);
+                    $tokens[] = $result['token'];
+                    $index = $result['position'];
+                } catch (ParseException $exception) {
+                    if (! $this->lenientParsing) {
+                        throw $exception;
+                    }
+
+                    $buffer = '~';
+
+                    continue;
+                }
 
                 continue;
             }

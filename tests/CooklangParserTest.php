@@ -166,18 +166,28 @@ COOK;
 it('throws a parse exception for invalid syntax', function (): void {
     $content = 'Add @ {100%g}';
 
-    expect(fn () => (new CooklangParser)->parseString($content))
+    expect(fn () => (new CooklangParser(lenientParsing: false))->parseString($content))
         ->toThrow(ParseException::class);
 });
 
 it('throws a parse exception when ingredient braces are missing', function (): void {
     $content = 'Season with @salt and @pepper{1%tsp}.';
 
-    expect(fn () => (new CooklangParser)->parseString($content))
+    expect(fn () => (new CooklangParser(lenientParsing: false))->parseString($content))
         ->toThrow(ParseException::class);
 });
 
 it('throws when the Cooklang file does not exist', function (): void {
     expect(fn () => (new CooklangParser)->parseFile('/tmp/missing-file.cook'))
         ->toThrow(FileNotFoundException::class);
+});
+
+it('tests parsing of a wrong recipe', function (): void {
+    $content = file_get_contents(__DIR__.'/examples/Flan di porri con salsa alle acciughe.cook');
+    if ($content === false) {
+        test()->fail('Unable to read example recipe file.');
+    }
+    $recipe = (new CooklangParser)->parseString($content);
+    expect($recipe !== null)->toBeTrue();
+
 });
