@@ -13,7 +13,7 @@ final class Recipe
      * @param  array<int, Comment>  $comments
      */
     public function __construct(
-        private readonly ?string $slug,
+        private ?string $slug,
         private readonly Metadata $metadata,
         private readonly array $steps,
         private readonly array $ingredients,
@@ -24,6 +24,11 @@ final class Recipe
     public function getSlug(): ?string
     {
         return $this->slug;
+    }
+
+    public function setSlug(string $slug): ?string
+    {
+        return $this->slug = $slug;
     }
 
     public function getMetadata(): Metadata
