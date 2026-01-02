@@ -256,7 +256,8 @@ final class Metadata
         if (is_array($value)) {
             $list = self::normalizeList($value);
 
-            if ($list === []) {
+            if (empty($list)) {
+                unset($canonical['image'], $canonical['images']);
                 return;
             }
 
